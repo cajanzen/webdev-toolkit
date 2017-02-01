@@ -11,12 +11,18 @@ modifications:
 - You can enter a running container as `someuser` by running:
 
 ```[language=bash]
-docker exec -it <containername> login
+docker exec -it --rm <containername> login
 ```
 
 
-== Typical usage:
+== Example usage for standalone app:
 
 ```[language=bash]
-docker run -v $(pwd):/code -p 8888:888 -d <myapp>
+docker run --rm -v $(pwd):/code -p 8888:8888 <myapp> 
+```
+
+
+== Example usage for notebook:
+```
+docker run --rm -v $(pwd):/code -p 8888:8888 jupyter notebook --port=8888 --ip=0.0.0.0
 ```
