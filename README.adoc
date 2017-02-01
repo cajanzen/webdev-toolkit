@@ -1,0 +1,21 @@
+= Analysis notebook
+
+== Description
+
+This notebook is based on continuumio/miniconda, with the following
+modifications:
+
+- You are expected to mount a volume with project source code at /code
+- entrypoint.sh creates `someuser` and gives it the uid of the /code directory
+  unless it is owned by root.
+- You can enter a running container as `someuser` by running:
+  ```[language=bash]
+  docker exec -it <containername> login
+  ```
+
+
+== Typical usage:
+
+```[language=bash]
+docker run -v $(pwd):/code -p 8888:888 -d <myapp>
+```
