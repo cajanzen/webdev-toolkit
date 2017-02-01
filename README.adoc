@@ -10,13 +10,13 @@ modifications:
   unless it is owned by root.
 - You can enter a running container as `someuser` by running:
 
-  ```[language=bash]
-  docker exec -it <containername> login
-  ```
+```[language=bash]
+docker exec -it <containername> login
+```
 
 
 == Typical usage:
 
-  ```[language=bash]
-  docker run -v $(pwd):/code -p 8888:888 -d <myapp>
-  ```
+```[language=bash]
+docker run -v $(pwd):/code -p 8888:888 -d <myapp>
+```
