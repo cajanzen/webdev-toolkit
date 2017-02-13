@@ -1,28 +1,49 @@
-= Analysis notebook
+= Webdev toolkit container
 
 == Description
 
 This notebook is based on continuumio/miniconda, with the following
 modifications:
 
-- You are expected to mount a volume with project source code at /code
-- entrypoint.sh creates `someuser` and gives it the uid of the /code directory
+- You are expected to mount a volume with project source code at /tmp
+- entrypoint.sh creates `someuser` and gives it the uid of the /tmp directory
   unless it is owned by root.
-- You can enter a running container as `someuser` by running:
+
+
+== Example for standard use:
+
+Standard use involves starting an ephemeral container that will delete itself
+after it finishes running.
 
 ```[language=bash]
-docker exec -it --rm <containername> login
+docker run --rm -v $(pwd):/tmp cajanzen/webdev-toolkit
 ```
 
 
-== Example usage for standalone app:
+== Example usage for leaving the container running
 
-```[language=bash]
-docker run --rm -v $(pwd):/code -p 8888:8888 <myapp> 
+An alternative use is to start the container but detach from it, leaving it
+running in the background doing nothing (sleep infinity).
+
+```
+docker run --name toolkit -v $(pwd):/tmp -d cajanzen/webdev-toolkit sleep infinity
 ```
 
+This is useful if you don't need to change the mounted volume, and you plan to
+re-enter the container often.
+You can enter the sleeping container as follows:
 
-== Example usage for notebook:
 ```
-docker run --rm -v $(pwd):/code -p 8888:8888 jupyter notebook --port=8888 --ip=0.0.0.0
+docker exec -it toolkit login
 ```
+
+Note that if you put a container into the background, you will need to manually stop it and delete it.
+
+```
+docker stop toolkit
+docker rm toolkit -v
+```
+
+(the -v deletes any named volumes the container might have had)
+
+

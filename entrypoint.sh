@@ -10,8 +10,9 @@ getent passwd ${userid} &&  exec "$@"
 
 echo "=== Adding user 'someuser' with uid ${userid} to match owner of /tmp"
 adduser --shell /bin/bash --uid ${userid} --disabled-password --gecos '' someuser
-export HOME=/home/someuser
+export HOME=/home/user
 export SHELL=/bin/bash
 chown -R someuser:someuser /opt/conda
+chown -R someuser:someuser /home/someuser
 echo "=== Passing control to 'someuser' with uid ${userid} to run: $@"
 exec gosu someuser "$@"
