@@ -60,6 +60,10 @@ RUN gpg --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
     && rm /usr/bin/gosu.asc \
     && chmod +x /usr/bin/gosu
 
+# it isn't a multi-user system so world-writeable within the container will be fine as long as the package managers are fine with it
+RUN chmod -R a+rwx /home/someuser
+RUN chmod -R a+rwx /opt/conda
+
 VOLUME /tmp
 WORKDIR /tmp
 COPY entrypoint.sh /usr/bin
