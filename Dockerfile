@@ -49,7 +49,8 @@ RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A170311380
         bundler \
         compass
 
-
+#  newly created rvm group gets GID 1000 which conflicts with the mounting strategy, so assign some other GID
+RUN groupmod -g 150 rvm 
 
 # install gosu per: https://gist.github.com/DevoKun/5154c6e645f9ded0f3bd
 RUN gpg --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
