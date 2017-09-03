@@ -9,6 +9,14 @@ modifications:
 - entrypoint.sh creates `someuser` and gives it the uid of the /tmp directory
   unless it is owned by root.
 
+The goal is to provide a reasonable common baseline of tools and to reduce
+problems associated with file permissions.
+This part is the most problematic, since letting the process run as room in the container means all created files belong to root.
+To mitigate this problem, the container will attempt create a user with the same UID as the current directory and will use that user to run the command within the container.
+If the current directory is owned by root, no change is needed.
+Every attempt is made to keep typical UID space available.
+It is not a flawless strategy but works in most cases.
+
 
 == Example for standard use:
 

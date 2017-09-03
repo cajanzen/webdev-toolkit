@@ -1,74 +1,31 @@
-FROM continuumio/miniconda
+FROM phusion/baseimage:0.9.22
+# version list: https://github.com/phusion/baseimage-docker/releases
 MAINTAINER Carl Janzen <carl.janzen@gmail.com>
 
-RUN apt-get update \
-    && apt-get install -y \
-      git \
-      build-essential \
-      python-dev \
-      python-pip \
-      python-virtualenv \
-      unzip
+RUN apt-get update && apt-get install -y \
+  build-essential \
+  python3-venv \
+  rsync \
+  git \
+  && rm -rf /var/lib/apt/lists/* 
 
-# instead of using /bin/sh, use bash login shell for better nvm/rvm install
-SHELL ["/bin/bash", "--login", "-c"]
+# Node
+ENV NVM_VERSION "0.33.2"
+ENV NVM_DIR "/opt/nvm"
+RUN curl -o- https://raw.githubusercontent.com/creationix/nvm/v${NVM_VERSION}/install.sh | bash
+ENV NODE_VERSION "8.4"
+RUN . ${NVM_DIR}/nvm.sh ; nvm install ${NODE_VERSION}
 
-# set up empty home directory with standard rc files from /etc/skel
-ENV HOME /home/someuser
-RUN cp -ar /etc/skel ${HOME}
+# Ruby
+RUN \curl -sSL https://get.rvm.io | bash -s stable --with-default-gems="gem bundler"
+RUN /usr/local/rvm/bin/rvm install ruby
 
-# install nvm, current nodejs, and some common packages
-ENV NVM_CLONE_DIR ${HOME}/.nvm
-RUN git clone https://github.com/creationix/nvm.git ${HOME}/.nvm \
-    && cd ${HOME}/.nvm \
-    && git checkout `git describe --abbrev=0 --tags --match "v[0-9]*" origin` \
-    && source ${HOME}/.nvm/nvm.sh \
-    && nvm install node \
-    && nvm use node \
-    && npm install -g \
-        bower \
-        generator-angular \
-        generator-karma \
-        generator-webapp \
-        grunt \ 
-        grunt-cli \
-        gulp \
-        gulp-cli \
-        yeoman-generator \
-        yo 
+# enable ssh
+RUN rm -f /etc/service/sshd/down
+RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
+COPY id_rsa.pub /tmp/your_key.pub
+RUN cat /tmp/your_key.pub >> /root/.ssh/authorized_keys && rm -f /tmp/your_key.pub
 
+RUN echo "nvm use node ; rvm use ruby " >> /root/.profile
+CMD ["/sbin/my_init"]
 
-# install rvm, current ruby, and some common packages
-RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 \
-    && curl -L https://get.rvm.io | bash -s stable --path ${HOME}/.rvm \
-    && source "${HOME}/.rvm/scripts/rvm" \
-    && rvm install ruby \
-    && rm -rf /var/lib/apt/lists/* \
-    && rvm use ruby \
-    && gem install \
-        bundler \
-        compass
-
-#  newly created rvm group gets GID 1000 which conflicts with the mounting strategy, so assign some other GID!
-RUN groupmod -g 150 rvm 
-
-# install gosu per: https://gist.github.com/DevoKun/5154c6e645f9ded0f3bd
-RUN gpg --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-    && curl -o /usr/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
-    && curl -o /usr/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
-    && gpg --verify /usr/bin/gosu.asc \
-    && rm /usr/bin/gosu.asc \
-    && chmod +x /usr/bin/gosu
-
-# it isn't a multi-user system so world-writeable within the container will be fine as long as the package managers are fine with it
-RUN chmod -R a+rwx /home/someuser
-RUN chmod -R a+rwx /opt/conda
-
-VOLUME /tmp
-WORKDIR /tmp
-COPY entrypoint.sh /usr/bin
-COPY login /usr/bin
-COPY scripts.sh /usr/local/bin
-COPY webdev-toolkit.sh /usr/local/bin
-ENTRYPOINT ["/usr/bin/entrypoint.sh"]
-CMD ["/bin/bash"]
