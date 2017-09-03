@@ -26,6 +26,6 @@ RUN /etc/my_init.d/00_regen_ssh_host_keys.sh
 COPY id_rsa.pub /tmp/your_key.pub
 RUN cat /tmp/your_key.pub >> /root/.ssh/authorized_keys && rm -f /tmp/your_key.pub
 
-RUN echo "nvm use node ; rvm use ruby " >> /root/.profile
 CMD ["/sbin/my_init"]
+# RUN echo "nvm use node ; rvm use ruby " >> /root/.profile
 
